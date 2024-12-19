@@ -1,0 +1,5 @@
+{
+  "name": "tap-s3-csv",
+  "pip_url": "git+https://github.com/olbycom/pipelinewise-tap-s3-csv.git@nekt",
+  "variant": "transferwise"
+}
