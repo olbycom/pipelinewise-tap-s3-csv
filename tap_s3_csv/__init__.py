@@ -3,35 +3,47 @@ Tap S3 csv main script
 """
 
 import sys
-import ujson
-import singer
-
 from typing import Dict
-from singer import metadata, get_logger
-from tap_s3_csv.discover import discover_streams
-from tap_s3_csv import s3
-from tap_s3_csv.sync import sync_stream
-from tap_s3_csv.config import CONFIG_CONTRACT
 
-LOGGER = get_logger('tap_s3_csv')
+import singer
+import ujson
+from singer import metadata
+
+from tap_s3_csv import s3
+from tap_s3_csv.config import CONFIG_CONTRACT
+from tap_s3_csv.discover import discover_streams
+from tap_s3_csv.logger import internal_logger, user_logger
+from tap_s3_csv.sync import sync_stream
 
 REQUIRED_CONFIG_KEYS = ["start_date", "bucket"]
 
 
-def do_discover(config: Dict) -> None:
+def _do_discover(config: Dict) -> None:
     """
     Discovers the source by connecting to the it and collecting information about the given tables/streams,
     it dumps the information to stdout
     :param config: connection and streams information
     :return: nothing
     """
-    LOGGER.info("Starting discover")
+    internal_logger.info("Starting discover.")
     streams = discover_streams(config)
     if not streams:
-        raise Exception("No streams found")
+        user_logger.error("No streams found.")
+        raise Exception("No streams found.")
     catalog = {"streams": streams}
     ujson.dump(catalog, sys.stdout, indent=2)
-    LOGGER.info("Finished discover")
+    internal_logger.info("Finished discover.")
+
+
+def do_discover(config: Dict) -> None:
+    try:
+        return _do_discover(config)
+    except Exception as e:
+        internal_logger.error(
+            f"Error on discover: {e}",
+            exc_info=True,
+        )
+        raise
 
 
 def stream_is_selected(meta_data: Dict) -> bool:
@@ -40,7 +52,7 @@ def stream_is_selected(meta_data: Dict) -> bool:
     :param meta_data: stream metadata
     :return: True if selected, False otherwise
     """
-    return meta_data.get((), {}).get('selected', False)
+    return meta_data.get((), {}).get("selected", False)
 
 
 def do_sync(config: Dict, catalog: Dict, state: Dict) -> None:
@@ -51,28 +63,28 @@ def do_sync(config: Dict, catalog: Dict, state: Dict) -> None:
     :param state: current state
     :return: Nothing
     """
-    LOGGER.info('Starting sync.')
+    internal_logger.info("Starting sync.")
 
-    for stream in catalog['streams']:
-        stream_name = stream['tap_stream_id']
-        mdata = metadata.to_map(stream['metadata'])
-        table_spec = next(s for s in config['tables'] if s['table_name'] == stream_name)
+    for stream in catalog["streams"]:
+        stream_name = stream["tap_stream_id"]
+        mdata = metadata.to_map(stream["metadata"])
+        table_spec = next(s for s in config["tables"] if s["table_name"] == stream_name)
         if not stream_is_selected(mdata):
-            LOGGER.info("%s: Skipping - not selected", stream_name)
+            internal_logger.info("%s: Skipping - not selected", stream_name)
             continue
 
         singer.write_state(state)
-        key_properties = metadata.get(mdata, (), 'table-key-properties')
-        singer.write_schema(stream_name, stream['schema'], key_properties)
+        key_properties = metadata.get(mdata, (), "table-key-properties")
+        singer.write_schema(stream_name, stream["schema"], key_properties)
 
-        LOGGER.info("%s: Starting sync", stream_name)
+        user_logger.info("%s: Starting sync", stream_name)
         counter_value = sync_stream(config, state, table_spec, stream)
-        LOGGER.info("%s: Completed sync (%s rows)", stream_name, counter_value)
+        internal_logger.info("%s: Completed sync (%s rows)", stream_name, counter_value)
 
-    LOGGER.info('Done syncing.')
+    internal_logger.info("Done syncing.")
 
 
-@singer.utils.handle_top_exception(LOGGER)
+@singer.utils.handle_top_exception(internal_logger)
 def main() -> None:
     """
     Main function
@@ -82,12 +94,12 @@ def main() -> None:
     config = args.config
 
     # Reassign the config tables to the validated object
-    config['tables'] = CONFIG_CONTRACT(config.get('tables', {}))
+    config["tables"] = CONFIG_CONTRACT(config.get("tables", {}))
 
     try:
-        for _ in s3.list_files_in_bucket(config['bucket']):
+        for _ in s3.list_files_in_bucket(config["bucket"]):
             break
-        LOGGER.warning("I have direct access to the bucket without assuming the configured role.")
+        internal_logger.warning("I have direct access to the bucket without assuming the configured role.")
     except Exception:
         s3.setup_aws_client(config)
 
@@ -97,5 +109,5 @@ def main() -> None:
         do_sync(config, args.properties, args.state)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
