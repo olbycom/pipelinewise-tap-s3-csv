@@ -1,5 +1,8 @@
 {
   "name": "tap-s3-csv",
-  "pip_url": "git+https://github.com/olbycom/pipelinewise-tap-s3-csv.git@nekt",
-  "variant": "transferwise"
+  "variant": "transferwise",
+  "namespace": "tap_s3_csv",
+  "pip_url": "-e ./extract/tap-s3-csv",
+  "executable": "tap-s3-csv",
+  "capabilities": ["state", "catalog", "discover"]
 }
