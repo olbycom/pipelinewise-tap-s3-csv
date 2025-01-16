@@ -33,8 +33,8 @@ def sync_stream(config: Dict, state: Dict, table_spec: Dict, stream: Dict) -> in
     table_name = table_spec["table_name"]
     modified_since = utils.strptime_with_tz(get_bookmark(state, table_name, "modified_since") or config["start_date"])
 
-    internal_logger.info('Syncing table "%s".', table_name)
-    internal_logger.info("Getting files modified since %s.", modified_since)
+    user_logger.info(f'Syncing table "{table_name}".')
+    user_logger.info(f"Getting files modified since {modified_since}.")
 
     s3_files = s3.get_input_files_for_table(config, table_spec, modified_since)
 
@@ -49,8 +49,6 @@ def sync_stream(config: Dict, state: Dict, table_spec: Dict, stream: Dict) -> in
 
         state = write_bookmark(state, table_name, "modified_since", s3_file["last_modified"].isoformat())
         write_state(state)
-
-    internal_logger.info('Wrote %s records for table "%s".', records_streamed, table_name)
 
     return records_streamed
 

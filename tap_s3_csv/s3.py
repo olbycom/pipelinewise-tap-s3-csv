@@ -7,12 +7,14 @@ from __future__ import division
 import itertools
 import os
 import re
+import sys
 from typing import Dict, Generator, Iterator, List, Optional
 
 import backoff
 import boto3
 import more_itertools
 from botocore.exceptions import ClientError
+from custom_logger import user_logger
 from singer import utils
 from singer_encodings.csv import (  # pylint:disable=no-name-in-module
     SDC_EXTRA_COLUMN,
@@ -212,14 +214,12 @@ def get_input_files_for_table(config: Dict, table_spec: Dict, modified_since: st
     pattern = table_spec["search_pattern"]
     try:
         matcher = re.compile(pattern)
-    except re.error as err:
-        raise ValueError(
-            (
-                f"search_pattern for table `{table_spec['table_name']}` is not a valid regular "
-                "expression. See https://docs.python.org/3.5/library/re.html#regular-expression-syntax"
-            ),
-            pattern,
-        ) from err
+    except re.error:
+        user_logger.error(
+            f"search_pattern for table `{table_spec['table_name']}` is not a valid regular "
+            "expression. See https://docs.python.org/3.5/library/re.html#regular-expression-syntax"
+        )
+        sys.exit(1)
 
     internal_logger.info('Checking bucket "%s" for keys matching "%s"', bucket, pattern)
     internal_logger.info("Skipping files which have a LastModified value older than %s", modified_since)
@@ -266,12 +266,13 @@ def get_input_files_for_table(config: Dict, table_spec: Dict, modified_since: st
                 )
 
     if matched_files_count == 0:
-        if prefix:
-            raise Exception(
-                f'No files found in bucket "{bucket}" that matches prefix "{prefix}" and pattern "{pattern}"'
-            )
-
-        raise Exception(f'No files found in bucket "{bucket}" that matches pattern "{pattern}"')
+        msg = (
+            f'No files found in bucket "{bucket}" that matches prefix "{prefix}" and pattern "{pattern}".'
+            if prefix
+            else f'No files found in bucket "{bucket}" that matches pattern "{pattern}".'
+        )
+        user_logger.error(msg)
+        sys.exit(1)
 
 
 @retry_pattern()
