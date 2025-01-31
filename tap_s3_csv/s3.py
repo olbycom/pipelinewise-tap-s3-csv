@@ -14,14 +14,12 @@ import backoff
 import boto3
 import more_itertools
 from botocore.exceptions import ClientError
-from custom_logger import user_logger
+from custom_logger import internal_logger, user_logger
 from singer import utils
 from singer_encodings.csv import (  # pylint:disable=no-name-in-module
     SDC_EXTRA_COLUMN,
     get_row_iterator,
 )
-
-from tap_s3_csv.logger import internal_logger, user_logger
 
 SDC_SOURCE_BUCKET_COLUMN = "_sdc_source_bucket"
 SDC_SOURCE_FILE_COLUMN = "_sdc_source_file"

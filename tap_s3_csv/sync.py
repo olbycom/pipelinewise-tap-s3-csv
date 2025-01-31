@@ -6,6 +6,7 @@ import csv
 import sys
 from typing import Dict
 
+from custom_logger import internal_logger, user_logger
 from singer import (
     Transformer,
     get_bookmark,
@@ -16,9 +17,7 @@ from singer import (
     write_state,
 )
 from singer_encodings.csv import get_row_iterator  # pylint:disable=no-name-in-module
-
 from tap_s3_csv import s3
-from tap_s3_csv.logger import internal_logger, user_logger
 
 
 def sync_stream(config: Dict, state: Dict, table_spec: Dict, stream: Dict) -> int:
