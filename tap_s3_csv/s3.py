@@ -16,10 +16,8 @@ import more_itertools
 from botocore.exceptions import ClientError
 from custom_logger import internal_logger, user_logger
 from singer import utils
-from singer_encodings.csv import (  # pylint:disable=no-name-in-module
-    SDC_EXTRA_COLUMN,
-    get_row_iterator,
-)
+
+from tap_s3_csv.encodings import SDC_EXTRA_COLUMN, custom_get_row_iterator
 
 SDC_SOURCE_BUCKET_COLUMN = "_sdc_source_bucket"
 SDC_SOURCE_FILE_COLUMN = "_sdc_source_file"
@@ -153,7 +151,7 @@ def sample_file(config: Dict, table_spec: Dict, s3_path: str, sample_rate: int) 
     """
     file_handle = get_file_handle(config, s3_path)
     # _raw_stream seems like the wrong way to access this..
-    iterator = get_row_iterator(file_handle._raw_stream, table_spec)  # pylint:disable=protected-access
+    iterator = custom_get_row_iterator(file_handle._raw_stream, table_spec)  # pylint:disable=protected-access
 
     current_row = 0
 

@@ -16,8 +16,9 @@ from singer import (
     write_record,
     write_state,
 )
-from singer_encodings.csv import get_row_iterator  # pylint:disable=no-name-in-module
+
 from tap_s3_csv import s3
+from tap_s3_csv.encodings import SDC_EXTRA_COLUMN, custom_get_row_iterator
 
 
 def sync_stream(config: Dict, state: Dict, table_spec: Dict, stream: Dict) -> int:
@@ -75,7 +76,7 @@ def sync_table_file(config: Dict, s3_path: str, table_spec: Dict, stream: Dict) 
     # need to be fixed. The other consequence of this could be larger
     # memory consumption but that's acceptable as well.
     csv.field_size_limit(sys.maxsize)
-    iterator = get_row_iterator(s3_file_handle._raw_stream, table_spec)  # pylint:disable=protected-access
+    iterator = custom_get_row_iterator(s3_file_handle._raw_stream, table_spec)  # pylint:disable=protected-access
 
     records_synced = 0
 

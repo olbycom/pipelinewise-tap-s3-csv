@@ -25,7 +25,7 @@ setup(
         "voluptuous==0.13.1",
         "ujson==5.4.0",
         "more_itertools==8.12.*",
-        "custom-logger @ git+https://github.com/olbycom/nekt-custom-logger-module.git@v0.0.7#egg=custom-logger",
+        "custom-logger @ git+https://github.com/olbycom/nekt-custom-logger-module.git@v0.0.8#egg=custom-logger",
     ],
     extras_require={
         "dev": [
