@@ -6,9 +6,10 @@
     "bucket": "awesome_bucket",
     "tables": [{
         "search_prefix": "feeds",
-        "search_pattern": ".csv",
+        "search_pattern": ".csv(.gz|.zip)?",
         "table_name": "my_table",
         "key_properties": ["id"],
-        "delimiter": ","
+        "delimiter": ",",
+        "date_overrides": ["created_at", "updated_at"]
     }]
 }
