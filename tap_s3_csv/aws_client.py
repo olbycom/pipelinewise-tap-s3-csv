@@ -223,10 +223,10 @@ class AwsClient:
             user_logger.error(f"search_pattern for table `{table_name}` is not a valid regular expression")
             sys.exit(1)
 
-        internal_logger.info(f'Looking for files in bucket "{self.bucket}" matching pattern "{search_pattern}"')
+        user_logger.info(f'Looking for files in bucket "{self.bucket}" matching pattern "{search_pattern}"')
 
         if modified_since:
-            internal_logger.info(f"Filtering files modified after {modified_since}")
+            user_logger.info(f"Filtering files modified after {modified_since}")
 
         matched_files_count = 0
         unmatched_files_count = 0

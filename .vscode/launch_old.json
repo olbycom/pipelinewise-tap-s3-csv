@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Tap S3 CSV: Discover",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tap_s3_csv/__init__.py",
+      "args": [
+        "--config",
+        ".secrets/config.json",
+        "--discover",
+        ">",
+        ".secrets/catalog.json"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "debPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Tap S3 CSV: Sync",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tap_s3_csv/__init__.py",
+      "args": [
+        "--config",
+        ".secrets/config.json",
+        "--properties",
+        ".secrets/catalog.json",
+        "--state",
+        ".secrets/state.json"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    }
+  ]
+}
